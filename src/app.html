@@ -15,6 +15,10 @@
             : window.matchMedia("(prefers-color-scheme: dark)").matches;
           document.documentElement.classList.toggle("dark", dark);
         } catch (e) {}
+        try {
+          var z = parseFloat(localStorage.getItem("zoom"));
+          if (!isNaN(z)) document.documentElement.style.zoom = String(z);
+        } catch (e) {}
       })();
     </script>
     %sveltekit.head%
