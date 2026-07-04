@@ -1,0 +1,4 @@
+# Allow lefthook's postinstall to run so `pnpm install` self-installs the git
+# hooks. pnpm blocks dependency build scripts by default.
+allowBuilds:
+  lefthook: true

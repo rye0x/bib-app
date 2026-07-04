@@ -1,25 +1,46 @@
 <script lang="ts">
   import "../app.css";
   import { getCurrentWindow } from "@tauri-apps/api/window";
+  import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
+  import { page } from "$app/state";
+  import { goto } from "$app/navigation";
+  import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
+  import RiArrowLeftLine from "remixicon-svelte/icons/arrow-left-line";
+  import { initTheme } from "$lib/theme.svelte";
+  import { initZoom, zoom } from "$lib/zoom.svelte";
 
   let { children } = $props();
 
   const appWindow = getCurrentWindow();
 
-  let isDark = $state(false);
+  const onSettings = $derived(page.url.pathname.startsWith("/settings"));
 
   onMount(() => {
-    isDark = document.documentElement.classList.contains("dark");
-  });
+    initTheme();
+    initZoom();
 
-  function toggleTheme() {
-    isDark = !isDark;
-    document.documentElement.classList.toggle("dark", isDark);
-    try {
-      localStorage.setItem("theme", isDark ? "dark" : "light");
-    } catch (e) {}
-  }
+    // Zoom is driven by the native View menu (⌘=, ⌘-, ⌘0). The Rust side
+    // owns the accelerators and forwards the action here.
+    const unlisten = listen<string>("menu:zoom", (e) => {
+      switch (e.payload) {
+        case "in":
+          zoom.in();
+          break;
+        case "out":
+          zoom.out();
+          break;
+        case "reset":
+        case "reset-all":
+          zoom.reset();
+          break;
+      }
+    });
+
+    return () => {
+      unlisten.then((f) => f());
+    };
+  });
 
   // Double-clicking the empty part of the titlebar zooms/restores the window,
   // matching native macOS behaviour (the buttons are children, so a click on
@@ -31,6 +52,7 @@
   }
 </script>
 
+<div class="app-root">
 <!-- Custom titlebar: draggable strip + window controls -->
 <div
   data-tauri-drag-region
@@ -58,30 +80,40 @@
     </button>
   </div>
 
-  <button
-    class="theme-toggle"
-    aria-label="Toggle theme"
-    title="Toggle light / dark"
-    onclick={toggleTheme}
-  >
-    {#if isDark}
-      <!-- sun -->
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-      </svg>
-    {:else}
-      <!-- moon -->
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
-    {/if}
-  </button>
+  {#if onSettings}
+    <button
+      class="nav-btn"
+      aria-label="Back"
+      title="Back"
+      onclick={() => goto("/")}
+    >
+      <RiArrowLeftLine width={16} height={16} />
+    </button>
+  {:else}
+    <button
+      class="nav-btn"
+      aria-label="Settings"
+      title="Settings"
+      onclick={() => goto("/settings")}
+    >
+      <RiSettings3Line width={16} height={16} />
+    </button>
+  {/if}
 </div>
 
 {@render children()}
+</div>
 
 <style>
+  /* Rounded window surface. The Tauri window is transparent, so this radius
+     is what gives us native-style macOS rounded corners. */
+  .app-root {
+    min-height: 100vh;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--background);
+  }
+
   .titlebar {
     position: fixed;
     top: 0;
@@ -139,7 +171,7 @@
     opacity: 1;
   }
 
-  .theme-toggle {
+  .nav-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -154,7 +186,7 @@
       background 0.15s ease,
       color 0.15s ease;
   }
-  .theme-toggle:hover {
+  .nav-btn:hover {
     background: var(--accent);
     color: var(--accent-foreground);
   }

@@ -1,0 +1,40 @@
+# Git hooks for the bib-app (Tauri + SvelteKit) monorepo.
+# Install after cloning:  pnpm install  (lefthook self-installs the hooks)
+# Skip once, if you must:  LEFTHOOK=0 git commit ...   /   git commit --no-verify
+
+# --- On commit: fast checks on STAGED files only ---------------------------
+# Formatting is auto-applied and re-staged; lint / types / clippy must pass.
+pre-commit:
+  parallel: false
+  commands:
+    1_prettier:
+      glob: "*.{js,ts,svelte,json,css,html,md}"
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+    2_rust-fmt:
+      root: "src-tauri/"
+      glob: "*.rs"
+      run: cargo fmt
+      stage_fixed: true
+    3_eslint:
+      glob: "*.{js,ts,svelte}"
+      run: pnpm exec eslint {staged_files}
+    4_svelte-check:
+      glob: "*.{svelte,ts,js}"
+      run: pnpm run check
+    5_clippy:
+      root: "src-tauri/"
+      glob: "*.rs"
+      run: cargo clippy --all-targets -- -D warnings
+
+# --- On push: the slower test suites ---------------------------------------
+pre-push:
+  parallel: true
+  commands:
+    vitest:
+      run: pnpm exec vitest run
+    rust-test:
+      root: "src-tauri/"
+      run: cargo test
+    e2e:
+      run: pnpm exec playwright test
