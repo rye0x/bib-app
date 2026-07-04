@@ -122,10 +122,11 @@
 	* {
 		@apply border-border outline-ring/50;
 	}
+	/* The window itself is transparent (see tauri.conf.json) so we can round
+	   the corners in CSS. The visible surface + radius live on .app-root. */
+	html,
 	body {
-		@apply bg-background text-foreground;
-	}
-	html {
-		@apply font-sans;
+		@apply font-sans text-foreground;
+		background: transparent;
 	}
 }
