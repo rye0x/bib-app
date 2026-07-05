@@ -28,7 +28,7 @@ Move around a LaTeX project as fast as you would in a code editor.
 
 A familiar three-pane layout, like a code editor built for LaTeX.
 
-- **Project explorer** rooted at the project directory — **Planned** (v0.2)
+- **Project explorer** rooted at the project directory — shows only source files (`.tex`, images, `.bib`, and related types); build/auxiliary artifacts created during compilation (`.aux`, `.log`, `.out`, `.toc`, `.synctex.gz`, …) are hidden — **Planned** (v0.2)
 - **Editor panel** — the main writing surface — **Planned** (v0.2)
 - **Compiled PDF preview**, side by side with the editor — **Planned** (v0.3)
 
@@ -42,7 +42,8 @@ Insert LaTeX building blocks without writing the boilerplate.
 
 - LaTeX compilation — **Planned** (v0.3)
 - PDF preview pane — **Planned** (v0.3)
-- Error and log surfacing — **Planned** (v0.3)
+- Compile log surfacing — **Planned** (v0.3)
+- Error diagnostics & debugging — explain what each error actually means in plain language and jump to the offending line, instead of dumping a raw log — **Planned** (v0.3)
 - Live / on-save recompile — **Planned** (v0.3)
 
 ## Templates
