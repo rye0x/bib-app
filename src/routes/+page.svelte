@@ -5,7 +5,10 @@
   import RiFolderOpenLine from "remixicon-svelte/icons/folder-open-line";
   import RiLayoutGridLine from "remixicon-svelte/icons/layout-grid-line";
 
-  import { ActionRow } from "$lib/components/home";
+  import { goto } from "$app/navigation";
+  import { ActionRow, NewProjectDialog } from "$lib/components/home";
+  import { project } from "$lib/project.svelte.js";
+  import { recents } from "$lib/recents.svelte.js";
 
   type Action = {
     icon: Component<SVGAttributes<SVGSVGElement>>;
@@ -14,14 +17,28 @@
     onclick?: () => void;
   };
 
+  let newProjectOpen = $state(false);
+
+  async function openProject() {
+    await project.openProjectDialog();
+    if (project.isOpen) goto("/editor");
+  }
+
+  async function openRecent(path: string) {
+    await project.openProject(path);
+    if (project.isOpen) goto("/editor");
+  }
+
   const actions: Action[] = [
-    { icon: RiFileAddLine, label: "New LaTeX Project", shortcut: "⌘N" },
-    { icon: RiFolderOpenLine, label: "Open LaTeX Project", shortcut: "⌘O" },
+    {
+      icon: RiFileAddLine,
+      label: "New LaTeX Project",
+      shortcut: "⌘N",
+      onclick: () => (newProjectOpen = true),
+    },
+    { icon: RiFolderOpenLine, label: "Open LaTeX Project", shortcut: "⌘O", onclick: openProject },
     { icon: RiLayoutGridLine, label: "Choose Template", shortcut: "⌘T" },
   ];
-
-  // Placeholder recent projects — wire up to real state later.
-  const recents: { name: string; path: string }[] = [];
 </script>
 
 <main
@@ -37,31 +54,29 @@
     <!-- Core actions -->
     <nav class="flex flex-col gap-0.5">
       {#each actions as a (a.label)}
-        <ActionRow
-          icon={a.icon}
-          label={a.label}
-          shortcut={a.shortcut}
-          onclick={a.onclick}
-        />
+        <ActionRow icon={a.icon} label={a.label} shortcut={a.shortcut} onclick={a.onclick} />
       {/each}
     </nav>
 
     <!-- Recent projects -->
     <section class="flex flex-col gap-1">
-      <h2
-        class="px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground"
-      >
+      <h2 class="px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
         Recent
       </h2>
-      {#if recents.length === 0}
-        <p class="px-3 py-2 text-sm text-muted-foreground">
-          No recent projects yet.
-        </p>
+      {#if recents.items.length === 0}
+        <p class="px-3 py-2 text-sm text-muted-foreground">No recent projects yet.</p>
       {:else}
-        {#each recents as r (r.path)}
-          <ActionRow icon={RiFolderOpenLine} label={r.name} hint={r.path} />
+        {#each recents.items as r (r.path)}
+          <ActionRow
+            icon={RiFolderOpenLine}
+            label={r.name}
+            hint={r.path}
+            onclick={() => openRecent(r.path)}
+          />
         {/each}
       {/if}
     </section>
   </div>
 </main>
+
+<NewProjectDialog bind:open={newProjectOpen} oncreated={() => goto("/editor")} />

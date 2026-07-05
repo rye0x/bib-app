@@ -9,6 +9,8 @@
   import RiArrowLeftLine from "remixicon-svelte/icons/arrow-left-line";
   import { initTheme } from "$lib/theme.svelte";
   import { initZoom, zoom } from "$lib/zoom.svelte";
+  import { initRecents } from "$lib/recents.svelte";
+  import { project } from "$lib/project.svelte";
 
   let { children } = $props();
 
@@ -19,10 +21,11 @@
   onMount(() => {
     initTheme();
     initZoom();
+    initRecents();
 
     // Zoom is driven by the native View menu (⌘=, ⌘-, ⌘0). The Rust side
     // owns the accelerators and forwards the action here.
-    const unlisten = listen<string>("menu:zoom", (e) => {
+    const unlistenZoom = listen<string>("menu:zoom", (e) => {
       switch (e.payload) {
         case "in":
           zoom.in();
@@ -37,8 +40,16 @@
       }
     });
 
+    // Open Project (⌘O) works from any route; navigate into the editor once a
+    // project is chosen.
+    const unlistenOpen = listen("menu:open-project", async () => {
+      await project.openProjectDialog();
+      if (project.isOpen) goto("/editor");
+    });
+
     return () => {
-      unlisten.then((f) => f());
+      unlistenZoom.then((f) => f());
+      unlistenOpen.then((f) => f());
     };
   });
 
@@ -53,55 +64,50 @@
 </script>
 
 <div class="app-root">
-<!-- Custom titlebar: draggable strip + window controls -->
-<div
-  data-tauri-drag-region
-  class="titlebar"
-  role="toolbar"
-  tabindex="-1"
-  ondblclick={onTitlebarDblClick}
->
-  <div class="controls">
-    <button class="dot close" aria-label="Close" onclick={() => appWindow.close()}>
-      <svg class="glyph" viewBox="0 0 12 12">
-        <path d="M3.6 3.6 L8.4 8.4 M8.4 3.6 L3.6 8.4" />
-      </svg>
-    </button>
-    <button class="dot min" aria-label="Minimize" onclick={() => appWindow.minimize()}>
-      <svg class="glyph" viewBox="0 0 12 12">
-        <path d="M3 6 L9 6" />
-      </svg>
-    </button>
-    <button class="dot max" aria-label="Maximize" onclick={() => appWindow.toggleMaximize()}>
-      <svg class="glyph" viewBox="0 0 12 12">
-        <path d="M3.4 3.4 L3.4 6.6 L6.6 3.4 Z" fill="currentColor" stroke="none" />
-        <path d="M8.6 8.6 L8.6 5.4 L5.4 8.6 Z" fill="currentColor" stroke="none" />
-      </svg>
-    </button>
+  <!-- Custom titlebar: draggable strip + window controls -->
+  <div
+    data-tauri-drag-region
+    class="titlebar"
+    role="toolbar"
+    tabindex="-1"
+    ondblclick={onTitlebarDblClick}
+  >
+    <div class="controls">
+      <button class="dot close" aria-label="Close" onclick={() => appWindow.close()}>
+        <svg class="glyph" viewBox="0 0 12 12">
+          <path d="M3.6 3.6 L8.4 8.4 M8.4 3.6 L3.6 8.4" />
+        </svg>
+      </button>
+      <button class="dot min" aria-label="Minimize" onclick={() => appWindow.minimize()}>
+        <svg class="glyph" viewBox="0 0 12 12">
+          <path d="M3 6 L9 6" />
+        </svg>
+      </button>
+      <button class="dot max" aria-label="Maximize" onclick={() => appWindow.toggleMaximize()}>
+        <svg class="glyph" viewBox="0 0 12 12">
+          <path d="M3.4 3.4 L3.4 6.6 L6.6 3.4 Z" fill="currentColor" stroke="none" />
+          <path d="M8.6 8.6 L8.6 5.4 L5.4 8.6 Z" fill="currentColor" stroke="none" />
+        </svg>
+      </button>
+    </div>
+
+    {#if onSettings}
+      <button class="nav-btn" aria-label="Back" title="Back" onclick={() => goto("/")}>
+        <RiArrowLeftLine width={16} height={16} />
+      </button>
+    {:else}
+      <button
+        class="nav-btn"
+        aria-label="Settings"
+        title="Settings"
+        onclick={() => goto("/settings")}
+      >
+        <RiSettings3Line width={16} height={16} />
+      </button>
+    {/if}
   </div>
 
-  {#if onSettings}
-    <button
-      class="nav-btn"
-      aria-label="Back"
-      title="Back"
-      onclick={() => goto("/")}
-    >
-      <RiArrowLeftLine width={16} height={16} />
-    </button>
-  {:else}
-    <button
-      class="nav-btn"
-      aria-label="Settings"
-      title="Settings"
-      onclick={() => goto("/settings")}
-    >
-      <RiSettings3Line width={16} height={16} />
-    </button>
-  {/if}
-</div>
-
-{@render children()}
+  {@render children()}
 </div>
 
 <style>
