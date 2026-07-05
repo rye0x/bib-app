@@ -3,8 +3,15 @@
   import { listen } from "@tauri-apps/api/event";
   import { goto } from "$app/navigation";
   import * as Resizable from "$lib/components/ui/resizable/index.js";
-  import { ProjectExplorer, EditorPanel, FuzzyFinder, ProjectSearch } from "$lib/components/editor";
+  import {
+    ProjectExplorer,
+    EditorPanel,
+    PreviewPane,
+    FuzzyFinder,
+    ProjectSearch,
+  } from "$lib/components/editor";
   import { project } from "$lib/project.svelte.js";
+  import { compile, initCompile } from "$lib/compile.svelte.js";
 
   // Keyboard-first overlays: quick-open (⌘P) and project-wide search (⌘⇧F).
   // Find & replace in the current file (⌘F) is owned by CodeMirror itself.
@@ -15,6 +22,16 @@
   // one (e.g. a reload), send the user back to the launcher.
   $effect(() => {
     if (!project.isOpen) goto("/");
+  });
+
+  // Clear compile output when switching projects so a previous project's PDF
+  // and diagnostics can't leak into a freshly opened one.
+  let currentRoot = project.root;
+  $effect(() => {
+    if (project.root !== currentRoot) {
+      currentRoot = project.root;
+      compile.reset();
+    }
   });
 
   function onkeydown(e: KeyboardEvent) {
@@ -32,10 +49,18 @@
   }
 
   onMount(() => {
-    // Save is driven by the native File menu (⌘S) — same pattern as zoom.
-    const unSave = listen("menu:save", () => project.save());
+    initCompile();
+    // Save and Build are driven by the native File menu (⌘S / ⌘B) — same
+    // pattern as zoom. On save we recompile when auto-build is on, so the
+    // preview stays in step with the source ("live" / on-save recompile).
+    const unSave = listen("menu:save", async () => {
+      await project.save();
+      if (compile.autoBuild) compile.compile();
+    });
+    const unBuild = listen("menu:build", () => compile.compile());
     return () => {
       unSave.then((f) => f());
+      unBuild.then((f) => f());
     };
   });
 </script>
@@ -49,8 +74,12 @@
         <ProjectExplorer />
       </Resizable.Pane>
       <Resizable.Handle />
-      <Resizable.Pane defaultSize={78}>
+      <Resizable.Pane defaultSize={48} minSize={25}>
         <EditorPanel />
+      </Resizable.Pane>
+      <Resizable.Handle />
+      <Resizable.Pane defaultSize={30} minSize={18}>
+        <PreviewPane />
       </Resizable.Pane>
     </Resizable.PaneGroup>
 

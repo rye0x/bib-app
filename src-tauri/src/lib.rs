@@ -4,6 +4,7 @@ use tauri::{
     Emitter,
 };
 
+mod compile;
 mod project;
 
 #[tauri::command]
@@ -38,10 +39,16 @@ pub fn run() {
             let save_file = MenuItemBuilder::with_id("save-file", "Save")
                 .accelerator("CmdOrCtrl+S")
                 .build(app)?;
+            // Build (typeset) the project — Rust owns the accelerator and
+            // forwards the action to the webview, same as Open/Save.
+            let build_project = MenuItemBuilder::with_id("build-project", "Build")
+                .accelerator("CmdOrCtrl+B")
+                .build(app)?;
             let file_menu = SubmenuBuilder::new(app, "File")
                 .item(&open_project)
                 .separator()
                 .item(&save_file)
+                .item(&build_project)
                 .build()?;
 
             // Standard Edit menu so copy/paste/undo keep working.
@@ -101,6 +108,9 @@ pub fn run() {
                 "save-file" => {
                     let _ = app.emit("menu:save", ());
                 }
+                "build-project" => {
+                    let _ = app.emit("menu:build", ());
+                }
                 "zoom-in" => {
                     let _ = app.emit("menu:zoom", "in");
                 }
@@ -124,7 +134,8 @@ pub fn run() {
             project::read_text_file,
             project::write_text_file,
             project::create_project,
-            project::search_project
+            project::search_project,
+            compile::compile_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

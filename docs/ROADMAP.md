@@ -8,7 +8,7 @@ Each phase groups related work under a version. Bib follows [semantic versioning
 
 ---
 
-## v0.1 — Foundation _(current)_
+## v0.1 — Foundation
 
 The shell everything else is built on.
 
@@ -39,18 +39,19 @@ Turn Bib into an actual editor, laid out like a code editor: project explorer + 
 
 See what you're writing. Completes the three-pane workspace: explorer · editor · PDF.
 
-- [ ] LaTeX compilation
+- [x] LaTeX compilation — `latexmk` (falling back to `pdflatex`), run in-process on the auto-detected main document
 - [x] PDF & image preview in the editor panel — open any `.pdf` or image from the explorer (rendered via the Tauri asset protocol)
-- [ ] Compiled PDF preview pane, side by side with the editor
-- [ ] Compile log surfacing
-- [ ] Error diagnostics & debugging — explain what each error actually means and jump to the offending line
-- [ ] Live / on-save recompile
+- [x] Compiled PDF preview pane, side by side with the editor — the third pane of the workspace, kept fresh across rebuilds
+- [x] Compile log surfacing — the full build log in a collapsible drawer
+- [x] Error diagnostics & debugging — parsed errors/warnings with plain-language hints for common failures; click one to jump to the offending line
+- [x] Live / on-save recompile — an "Auto" toggle that rebuilds on every save (⌘B builds on demand)
 
-## v0.4 — Templates & Components
+## v0.4 — Templates & Components _(current)_
 
 Start faster and build faster.
 
 - [ ] Built-in template library
+- [ ] Templates gallery page — browse curated LaTeX templates (article, report, beamer, CV, …); picking one scaffolds a new project pre-filled with that template. Wires up the ⌘T "Choose Template" homepage action.
 - [ ] "New from template" flow
 - [ ] Custom, user-defined templates
 - [ ] Drag-and-drop component palette — insert tables, figures, lists, math environments, and other LaTeX building blocks without writing the boilerplate
