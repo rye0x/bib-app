@@ -13,6 +13,24 @@ export type TreeNode = {
   children?: TreeNode[];
 };
 
+// A file flattened out of the tree, with its path relative to the project root
+// — the shape the fuzzy finder and search overlays work against.
+export type ProjectFile = {
+  name: string;
+  path: string; // absolute
+  relPath: string; // relative to the project root
+};
+
+// One hit from a project-wide search, mirroring the Rust `SearchMatch`.
+export type SearchMatch = {
+  path: string;
+  relPath: string;
+  line: number;
+  lineText: string;
+  matchStart: number;
+  matchLen: number;
+};
+
 // How a file opens: editable text, or a read-only preview (PDF / image).
 export type FileKind = "text" | "pdf" | "image" | "other";
 
@@ -30,6 +48,21 @@ let openPath = $state<string | null>(null);
 let content = $state(""); // live editor doc — the source of truth for save
 let savedContent = $state(""); // last-saved snapshot, for dirty tracking
 let loading = $state(false);
+// A one-shot request to reveal a line in the editor (from a search hit). The
+// nonce lets the editor re-run the reveal even when the same line is requested
+// twice in a row.
+let reveal = $state<{ line: number; nonce: number } | null>(null);
+
+// Depth-first flatten of the source tree into a relative-path file list.
+function flatten(node: TreeNode, rootPath: string): ProjectFile[] {
+  if (!node.isDir) {
+    const rel = node.path.startsWith(rootPath)
+      ? node.path.slice(rootPath.length).replace(/^\//, "")
+      : node.path;
+    return [{ name: node.name, path: node.path, relPath: rel }];
+  }
+  return (node.children ?? []).flatMap((c) => flatten(c, rootPath));
+}
 
 export const project = {
   get root(): string | null {
@@ -52,6 +85,15 @@ export const project = {
   },
   get isDirty(): boolean {
     return openPath !== null && content !== savedContent;
+  },
+  /** Every source file in the project, flattened for quick-open and search. */
+  get files(): ProjectFile[] {
+    if (!tree || root === null) return [];
+    return flatten(tree, root);
+  },
+  /** A pending request to scroll to / select a line, consumed by the editor. */
+  get reveal(): { line: number; nonce: number } | null {
+    return reveal;
   },
 
   /** Prompt for a folder and open it as the project. */
@@ -91,6 +133,22 @@ export const project = {
       content = "";
       savedContent = "";
     }
+  },
+
+  /**
+   * Open a text file and reveal a specific 1-based line — used when jumping to
+   * a project-search hit. No-ops for non-text files.
+   */
+  async openFileAt(path: string, line: number) {
+    if (fileKind(path) !== "text") return;
+    if (path !== openPath) await this.openFile(path);
+    reveal = { line, nonce: (reveal?.nonce ?? 0) + 1 };
+  },
+
+  /** Case-insensitive plain-text search across the project's source files. */
+  async searchProject(query: string): Promise<SearchMatch[]> {
+    if (root === null || query.trim() === "") return [];
+    return invoke<SearchMatch[]>("search_project", { root, query });
   },
 
   /** Called by the editor on every doc change. */

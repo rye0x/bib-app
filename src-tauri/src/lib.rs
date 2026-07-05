@@ -122,7 +122,8 @@ pub fn run() {
             greet,
             project::read_project_tree,
             project::read_text_file,
-            project::write_text_file
+            project::write_text_file,
+            project::search_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

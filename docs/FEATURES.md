@@ -8,28 +8,28 @@ A closer look at what Bib does and what's coming. Each item is tagged **Availabl
 
 The core writing experience: a minimalist, keyboard-first LaTeX editor inspired by **Neovim/Vim** and the **Zed** editor. Quiet UI, fast keys, no distractions.
 
-- LaTeX editing surface — **Planned** (v0.2)
-- Keyboard-first navigation and editing — **Planned** (v0.2)
-- LaTeX syntax highlighting — **Planned** (v0.2)
-- LaTeX autocompletion — LSP-style completion dropdown for commands, environments, and references — **Planned** (v0.2)
-- Open / save `.tex` files — **Planned** (v0.2)
-- Recent projects on the homepage — **Planned** (v0.2)
+- LaTeX editing surface — **Available**
+- Keyboard-first navigation and editing — **Available**
+- LaTeX syntax highlighting — **Available**
+- LaTeX autocompletion — LSP-style completion dropdown for commands, environments, references, and citations — **Available**
+- Open / save `.tex` files — **Available**
+- Recent projects on the homepage — **Available**
 - Customizable keybindings and command palette — **Planned** (v0.6)
 
 ## Search & navigation
 
 Move around a LaTeX project as fast as you would in a code editor.
 
-- Find & replace in the current file (`⌘F`) — **Planned** (v0.2)
-- Fuzzy file finder — quick-open any file in the project (`⌘P`) — **Planned** (v0.2)
-- Project-wide search across all files (`⌘⇧F`) — **Planned** (v0.2)
+- Find & replace in the current file (`⌘F`) — **Available**
+- Fuzzy file finder — quick-open any file in the project (`⌘P`) — **Available**
+- Project-wide search across all files (`⌘⇧F`) — **Available**
 
 ## Workspace layout
 
 A familiar three-pane layout, like a code editor built for LaTeX.
 
-- **Project explorer** rooted at the project directory — shows only source files (`.tex`, images, `.bib`, and related types); build/auxiliary artifacts created during compilation (`.aux`, `.log`, `.out`, `.toc`, `.synctex.gz`, …) are hidden — **Planned** (v0.2)
-- **Editor panel** — the main writing surface — **Planned** (v0.2)
+- **Project explorer** rooted at the project directory — shows only source files (`.tex`, images, `.bib`, and related types); build/auxiliary artifacts created during compilation (`.aux`, `.log`, `.out`, `.toc`, `.synctex.gz`, …) are hidden — **Available**
+- **Editor panel** — the main writing surface — **Available**
 - **Compiled PDF preview**, side by side with the editor — **Planned** (v0.3)
 
 ## Components

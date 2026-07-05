@@ -25,14 +25,14 @@ The shell everything else is built on.
 Turn Bib into an actual editor, laid out like a code editor: project explorer + editor panel.
 
 - [x] LaTeX editing surface
-- [ ] Minimalist, keyboard-first editing UX (Neovim/Zed-inspired)
+- [x] Minimalist, keyboard-first editing UX (Neovim/Zed-inspired) — keyboard-driven quick-open, project search, and find/replace overlays
 - [x] Project explorer rooted at the project directory — shows only source files (`.tex`, images, `.bib`, …); build/auxiliary artifacts are hidden
 - [x] Open and save `.tex` files
 - [x] LaTeX syntax highlighting
-- [ ] LaTeX autocompletion — LSP-style completion dropdown (commands, environments, refs)
-- [ ] Find & replace in the current file (`⌘F`)
-- [ ] Fuzzy file finder — quick-open across the project (`⌘P`)
-- [ ] Project-wide search across all files (`⌘⇧F`)
+- [x] LaTeX autocompletion — LSP-style completion dropdown (commands, environments, refs, cites)
+- [x] Find & replace in the current file (`⌘F`)
+- [x] Fuzzy file finder — quick-open across the project (`⌘P`)
+- [x] Project-wide search across all files (`⌘⇧F`)
 - [x] Recent projects wired to real state (homepage)
 
 ## v0.3 — Compile & Preview

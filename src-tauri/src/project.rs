@@ -13,6 +13,13 @@ const SOURCE_EXTS: &[&str] = &[
     "tex", "bib", "cls", "sty", "png", "jpg", "jpeg", "gif", "svg", "pdf", "eps",
 ];
 
+// The subset of sources that hold searchable text (project-wide search).
+const TEXT_EXTS: &[&str] = &["tex", "bib", "cls", "sty"];
+
+// Hard caps so a search over a huge project can't hang the UI or flood the IPC.
+const MAX_MATCHES: usize = 1000;
+const MAX_LINE_LEN: usize = 400;
+
 // Directories we never descend into.
 const SKIP_DIRS: &[&str] = &[".git", "node_modules", ".texpadtmp", "auxil"];
 
@@ -25,11 +32,15 @@ pub struct TreeNode {
     pub children: Option<Vec<TreeNode>>, // Some for dirs, None for files
 }
 
-fn is_source_file(path: &Path) -> bool {
+fn has_ext_in(path: &Path, exts: &[&str]) -> bool {
     match path.extension().and_then(|e| e.to_str()) {
-        Some(ext) => SOURCE_EXTS.contains(&ext.to_ascii_lowercase().as_str()),
+        Some(ext) => exts.contains(&ext.to_ascii_lowercase().as_str()),
         None => false,
     }
+}
+
+fn is_source_file(path: &Path) -> bool {
+    has_ext_in(path, SOURCE_EXTS)
 }
 
 fn build_node(path: &Path) -> Option<TreeNode> {
@@ -88,6 +99,95 @@ pub fn read_text_file(path: String) -> Result<String, String> {
 #[tauri::command]
 pub fn write_text_file(path: String, contents: String) -> Result<(), String> {
     fs::write(&path, contents).map_err(|e| e.to_string())
+}
+
+// One hit from a project-wide search: enough for the UI to show a preview line
+// and jump to the exact spot when clicked.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchMatch {
+    pub path: String,     // absolute
+    pub rel_path: String, // relative to the search root
+    pub line: usize,      // 1-based line number
+    pub line_text: String,
+    pub match_start: usize, // byte offset of the match within line_text
+    pub match_len: usize,
+}
+
+// Collect searchable text files under `dir`, honouring the same skip list as
+// the explorer so we never descend into .git / node_modules / build dirs.
+fn collect_text_files(dir: &Path, out: &mut Vec<PathBuf>) {
+    let entries = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+    for entry in entries.filter_map(|e| e.ok()) {
+        let path = entry.path();
+        if path.is_dir() {
+            let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
+            if name
+                .map(|n| SKIP_DIRS.contains(&n.as_str()))
+                .unwrap_or(false)
+            {
+                continue;
+            }
+            collect_text_files(&path, out);
+        } else if has_ext_in(&path, TEXT_EXTS) {
+            out.push(path);
+        }
+    }
+}
+
+/// Case-insensitive plain-text search across the project's source files.
+/// Returns up to `MAX_MATCHES` hits; an empty query yields nothing.
+#[tauri::command]
+pub fn search_project(root: String, query: String) -> Result<Vec<SearchMatch>, String> {
+    let root_path = PathBuf::from(&root);
+    if !root_path.is_dir() {
+        return Err(format!("Not a directory: {root}"));
+    }
+    if query.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let needle = query.to_lowercase();
+    let mut files = Vec::new();
+    collect_text_files(&root_path, &mut files);
+    files.sort();
+
+    let mut matches = Vec::new();
+    'outer: for path in files {
+        let contents = match fs::read_to_string(&path) {
+            Ok(c) => c,
+            Err(_) => continue, // skip binary/unreadable files
+        };
+        let rel_path = path
+            .strip_prefix(&root_path)
+            .unwrap_or(&path)
+            .to_string_lossy()
+            .into_owned();
+
+        for (i, line) in contents.lines().enumerate() {
+            if let Some(pos) = line.to_lowercase().find(&needle) {
+                let line_text: String = line.chars().take(MAX_LINE_LEN).collect();
+                // `pos` indexes the lowercased copy, but ASCII-case folding
+                // preserves byte offsets, so it maps back to `line` directly.
+                matches.push(SearchMatch {
+                    path: path.to_string_lossy().into_owned(),
+                    rel_path: rel_path.clone(),
+                    line: i + 1,
+                    match_start: pos.min(line_text.len()),
+                    match_len: query.len(),
+                    line_text,
+                });
+                if matches.len() >= MAX_MATCHES {
+                    break 'outer;
+                }
+            }
+        }
+    }
+
+    Ok(matches)
 }
 
 #[cfg(test)]
@@ -168,5 +268,44 @@ mod tests {
     #[test]
     fn rejects_non_directory() {
         assert!(read_project_tree("/no/such/path/here".to_string()).is_err());
+    }
+
+    #[test]
+    fn search_finds_matches_case_insensitively_and_skips_binaries() {
+        let base = env::temp_dir().join(format!("bib-search-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        let sections = base.join("sections");
+        fs::create_dir_all(&sections).unwrap();
+        fs::create_dir_all(base.join(".git")).unwrap();
+
+        fs::write(
+            base.join("main.tex"),
+            "\\section{Intro}\nThe THEOREM holds.",
+        )
+        .unwrap();
+        fs::write(sections.join("body.tex"), "A theorem about theorems.").unwrap();
+        // A non-text source and a skipped dir must be ignored.
+        fs::write(base.join("figure.png"), "theorem").unwrap();
+        fs::write(base.join(".git").join("config"), "theorem").unwrap();
+
+        let hits =
+            search_project(base.to_string_lossy().into_owned(), "theorem".to_string()).unwrap();
+
+        // main.tex line 2 (one hit) + body.tex line 1 (find returns first only).
+        assert_eq!(hits.len(), 2, "expected one hit per matching line");
+        assert!(hits.iter().all(|h| h.rel_path.ends_with(".tex")));
+        assert!(hits.iter().any(|h| h.rel_path == "main.tex" && h.line == 2));
+        assert!(hits
+            .iter()
+            .any(|h| h.rel_path == format!("sections{}body.tex", std::path::MAIN_SEPARATOR)));
+
+        // Empty query is a no-op.
+        assert!(
+            search_project(base.to_string_lossy().into_owned(), "".to_string())
+                .unwrap()
+                .is_empty()
+        );
+
+        let _ = fs::remove_dir_all(&base);
     }
 }
