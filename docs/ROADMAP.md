@@ -56,14 +56,27 @@ Start faster and build faster.
 - [ ] Custom, user-defined templates
 - [ ] Drag-and-drop component palette — insert tables, figures, lists, math environments, and other LaTeX building blocks without writing the boilerplate
 
-## v0.5 — Universal Bibliography
+## v0.5 — Bibliography
 
-The "Bib" in Bib.
+The "Bib" in Bib. Two libraries, one workflow: a **universal** library that follows you across every project, and a **project** library scoped to the document you're writing. Both are first-class; the editor reads from whichever the user points it at.
 
-- [ ] Universal `.bib` store shared across projects
-- [ ] Citation insertion and autocomplete
-- [ ] BibTeX / BibLaTeX entry management
-- [ ] Import from DOI / arXiv
+**Two-tier library model**
+
+- [ ] Universal `.bib` store — a global library shared across all projects, living outside any single project directory
+- [ ] Project `.bib` store — a per-project library scoped to the current project, tracked alongside its source files
+- [ ] Library switcher — pick which library (universal, project, or both merged) the editor cites from and inserts into
+- [ ] Promote / copy entries between the two — pull a project entry into the universal library, or drop a universal entry into the current project
+
+**Entry management** (works against whichever library is active)
+
+- [ ] BibTeX / BibLaTeX entry management — add, edit, and delete entries
+- [ ] Import from DOI / arXiv, routed to the chosen library
+- [ ] Duplicate detection across universal + project on import
+
+**Citing while you write**
+
+- [ ] Citation insertion and autocomplete drawing from the active library set
+- [ ] `\cite` autocomplete surfaces entries from both universal and project libraries, labeled by source
 
 ## v0.6 — Performance & Polish
 
