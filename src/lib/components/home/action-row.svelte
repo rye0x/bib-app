@@ -14,14 +14,7 @@
     onclick?: () => void;
   };
 
-  let {
-    icon: Icon,
-    label,
-    hint,
-    shortcut,
-    class: className,
-    onclick,
-  }: Props = $props();
+  let { icon: Icon, label, hint, shortcut, class: className, onclick }: Props = $props();
 </script>
 
 <button
@@ -39,16 +32,14 @@
     </span>
   {/if}
 
-  <span class="min-w-0 flex-1 text-sm font-medium">{label}</span>
+  <span class="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
 
   {#if hint}
-    <span class="truncate text-xs text-muted-foreground">{hint}</span>
+    <span class="min-w-0 max-w-[45%] truncate text-xs text-muted-foreground">{hint}</span>
   {/if}
 
   {#if shortcut}
-    <kbd
-      class="shrink-0 font-sans text-xs text-muted-foreground/70"
-    >
+    <kbd class="shrink-0 font-sans text-xs text-muted-foreground/70">
       {shortcut}
     </kbd>
   {/if}

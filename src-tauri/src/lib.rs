@@ -123,6 +123,7 @@ pub fn run() {
             project::read_project_tree,
             project::read_text_file,
             project::write_text_file,
+            project::create_project,
             project::search_project
         ])
         .run(tauri::generate_context!())

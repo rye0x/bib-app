@@ -102,6 +102,16 @@ export const project = {
     if (typeof picked === "string") await this.openProject(picked);
   },
 
+  /**
+   * Scaffold a new project folder (`parent/name`) with a starter `main.tex`
+   * and open it. Returns the new project's root path.
+   */
+  async createProject(parent: string, name: string): Promise<string> {
+    const newRoot = await invoke<string>("create_project", { parent, name });
+    await this.openProject(newRoot);
+    return newRoot;
+  },
+
   async openProject(path: string) {
     loading = true;
     try {

@@ -101,6 +101,50 @@ pub fn write_text_file(path: String, contents: String) -> Result<(), String> {
     fs::write(&path, contents).map_err(|e| e.to_string())
 }
 
+// The starter document a new project opens onto, so the editor has real
+// content to show rather than an empty pane.
+const STARTER_TEX: &str = r"\documentclass{article}
+
+\title{Untitled}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+Start writing here.
+
+\end{document}
+";
+
+/// Scaffold a new project: create `parent/name` (which must not already exist)
+/// and seed it with a starter `main.tex`. Returns the new project's root path.
+#[tauri::command]
+pub fn create_project(parent: String, name: String) -> Result<String, String> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return Err("Project name cannot be empty".to_string());
+    }
+    if trimmed.contains('/') || trimmed.contains('\\') || trimmed.contains("..") {
+        return Err("Project name cannot contain path separators or '..'".to_string());
+    }
+
+    let parent_path = PathBuf::from(&parent);
+    if !parent_path.is_dir() {
+        return Err(format!("Not a directory: {parent}"));
+    }
+
+    let root = parent_path.join(trimmed);
+    if root.exists() {
+        return Err(format!("'{trimmed}' already exists in this location"));
+    }
+
+    fs::create_dir_all(&root).map_err(|e| e.to_string())?;
+    fs::write(root.join("main.tex"), STARTER_TEX).map_err(|e| e.to_string())?;
+
+    Ok(root.to_string_lossy().into_owned())
+}
+
 // One hit from a project-wide search: enough for the UI to show a preview line
 // and jump to the exact spot when clicked.
 #[derive(Serialize)]
@@ -305,6 +349,34 @@ mod tests {
                 .unwrap()
                 .is_empty()
         );
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn create_project_scaffolds_folder_and_main_tex() {
+        let base = env::temp_dir().join(format!("bib-create-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(&base).unwrap();
+        let parent = base.to_string_lossy().into_owned();
+
+        // Happy path: creates the folder + a starter main.tex.
+        let root = create_project(parent.clone(), "my-paper".to_string()).unwrap();
+        let root_path = PathBuf::from(&root);
+        assert!(root_path.is_dir());
+        let main_tex = root_path.join("main.tex");
+        assert!(main_tex.is_file());
+        assert!(fs::read_to_string(&main_tex)
+            .unwrap()
+            .contains("\\documentclass{article}"));
+
+        // Creating into an existing folder must fail (no clobber).
+        assert!(create_project(parent.clone(), "my-paper".to_string()).is_err());
+
+        // Invalid names are rejected.
+        assert!(create_project(parent.clone(), "  ".to_string()).is_err());
+        assert!(create_project(parent.clone(), "a/b".to_string()).is_err());
+        assert!(create_project(parent.clone(), "..".to_string()).is_err());
 
         let _ = fs::remove_dir_all(&base);
     }

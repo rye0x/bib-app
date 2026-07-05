@@ -6,7 +6,7 @@
   import RiLayoutGridLine from "remixicon-svelte/icons/layout-grid-line";
 
   import { goto } from "$app/navigation";
-  import { ActionRow } from "$lib/components/home";
+  import { ActionRow, NewProjectDialog } from "$lib/components/home";
   import { project } from "$lib/project.svelte.js";
   import { recents } from "$lib/recents.svelte.js";
 
@@ -16,6 +16,8 @@
     shortcut?: string;
     onclick?: () => void;
   };
+
+  let newProjectOpen = $state(false);
 
   async function openProject() {
     await project.openProjectDialog();
@@ -28,7 +30,12 @@
   }
 
   const actions: Action[] = [
-    { icon: RiFileAddLine, label: "New LaTeX Project", shortcut: "⌘N" },
+    {
+      icon: RiFileAddLine,
+      label: "New LaTeX Project",
+      shortcut: "⌘N",
+      onclick: () => (newProjectOpen = true),
+    },
     { icon: RiFolderOpenLine, label: "Open LaTeX Project", shortcut: "⌘O", onclick: openProject },
     { icon: RiLayoutGridLine, label: "Choose Template", shortcut: "⌘T" },
   ];
@@ -71,3 +78,5 @@
     </section>
   </div>
 </main>
+
+<NewProjectDialog bind:open={newProjectOpen} oncreated={() => goto("/editor")} />
