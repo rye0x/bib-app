@@ -11,9 +11,24 @@ The core writing experience: a minimalist, keyboard-first LaTeX editor inspired 
 - LaTeX editing surface — **Planned** (v0.2)
 - Keyboard-first navigation and editing — **Planned** (v0.2)
 - LaTeX syntax highlighting — **Planned** (v0.2)
-- Open / save `.tex` files and project file tree — **Planned** (v0.2)
+- LaTeX autocompletion — LSP-style completion dropdown for commands, environments, and references — **Planned** (v0.2)
+- Open / save `.tex` files — **Planned** (v0.2)
 - Recent projects on the homepage — **Planned** (v0.2)
 - Customizable keybindings and command palette — **Planned** (v0.6)
+
+## Workspace layout
+
+A familiar three-pane layout, like a code editor built for LaTeX.
+
+- **Project explorer** rooted at the project directory — **Planned** (v0.2)
+- **Editor panel** — the main writing surface — **Planned** (v0.2)
+- **Compiled PDF preview**, side by side with the editor — **Planned** (v0.3)
+
+## Components
+
+Insert LaTeX building blocks without writing the boilerplate.
+
+- Drag-and-drop component palette — tables, figures, lists, math environments, and more — **Planned** (v0.4)
 
 ## Compile & Preview
 
@@ -57,3 +72,11 @@ The shell that's already in place.
 - UI zoom (`⌘+` / `⌘−` / `⌘0`), Zed/VS Code style — **Available**
 - Native menu bar (Bib / Edit / View / Window) — **Available**
 - Homepage and settings screens — **Available**
+
+## AI-enabled editing
+
+After the stable 1.0, Bib gains an AI-assisted LaTeX layer — kept local-first and opt-in.
+
+- AI-assisted authoring and rewriting — **Planned** (post-1.0)
+- Context-aware LaTeX completion and error fixes — **Planned** (post-1.0)
+- Assistance for citations, tables, and figures — **Planned** (post-1.0)

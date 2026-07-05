@@ -42,10 +42,13 @@ It's built with [Tauri](https://tauri.app) and Rust instead of Electron, so it s
 
 **Planned**
 
-- LaTeX editor with syntax highlighting and keyboard-first editing
+- LaTeX editor with syntax highlighting, keyboard-first editing, and LSP-style autocompletion
+- Three-pane workspace: project explorer, editor, and compiled PDF preview
 - Compile + live PDF preview
+- Drag-and-drop component palette (tables, figures, lists, math)
 - Template library
 - Universal bibliography with citation autocomplete
+- _Post-1.0:_ AI-enabled LaTeX editing
 
 See [docs/FEATURES.md](docs/FEATURES.md) for details, and the [Roadmap](docs/ROADMAP.md) for timing.
 
