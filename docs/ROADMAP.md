@@ -30,6 +30,9 @@ Turn Bib into an actual editor, laid out like a code editor: project explorer + 
 - [ ] Open and save `.tex` files
 - [ ] LaTeX syntax highlighting
 - [ ] LaTeX autocompletion — LSP-style completion dropdown (commands, environments, refs)
+- [ ] Find & replace in the current file (`⌘F`)
+- [ ] Fuzzy file finder — quick-open across the project (`⌘P`)
+- [ ] Project-wide search across all files (`⌘⇧F`)
 - [ ] Recent projects wired to real state (homepage)
 
 ## v0.3 — Compile & Preview

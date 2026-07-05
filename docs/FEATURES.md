@@ -16,6 +16,14 @@ The core writing experience: a minimalist, keyboard-first LaTeX editor inspired 
 - Recent projects on the homepage — **Planned** (v0.2)
 - Customizable keybindings and command palette — **Planned** (v0.6)
 
+## Search & navigation
+
+Move around a LaTeX project as fast as you would in a code editor.
+
+- Find & replace in the current file (`⌘F`) — **Planned** (v0.2)
+- Fuzzy file finder — quick-open any file in the project (`⌘P`) — **Planned** (v0.2)
+- Project-wide search across all files (`⌘⇧F`) — **Planned** (v0.2)
+
 ## Workspace layout
 
 A familiar three-pane layout, like a code editor built for LaTeX.

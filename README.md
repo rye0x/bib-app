@@ -44,6 +44,7 @@ It's built with [Tauri](https://tauri.app) and Rust instead of Electron, so it s
 
 - LaTeX editor with syntax highlighting, keyboard-first editing, and LSP-style autocompletion
 - Three-pane workspace: project explorer, editor, and compiled PDF preview
+- Fuzzy file finder and project-wide search (`⌘P` / `⌘F` / `⌘⇧F`)
 - Compile + live PDF preview
 - Drag-and-drop component palette (tables, figures, lists, math)
 - Template library
