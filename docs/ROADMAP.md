@@ -22,31 +22,37 @@ The shell everything else is built on.
 
 ## v0.2 — Editor Core
 
-Turn Bib into an actual editor.
+Turn Bib into an actual editor, laid out like a code editor: project explorer + editor panel.
 
 - [ ] LaTeX editing surface
 - [ ] Minimalist, keyboard-first editing UX (Neovim/Zed-inspired)
+- [ ] Project explorer rooted at the project directory — shows only source files (`.tex`, images, `.bib`, …); build/auxiliary artifacts are hidden
 - [ ] Open and save `.tex` files
 - [ ] LaTeX syntax highlighting
-- [ ] Project file tree
+- [ ] LaTeX autocompletion — LSP-style completion dropdown (commands, environments, refs)
+- [ ] Find & replace in the current file (`⌘F`)
+- [ ] Fuzzy file finder — quick-open across the project (`⌘P`)
+- [ ] Project-wide search across all files (`⌘⇧F`)
 - [ ] Recent projects wired to real state (homepage)
 
 ## v0.3 — Compile & Preview
 
-See what you're writing.
+See what you're writing. Completes the three-pane workspace: explorer · editor · PDF.
 
 - [ ] LaTeX compilation
-- [ ] PDF preview pane
-- [ ] Error and log surfacing
+- [ ] Compiled PDF preview pane, side by side with the editor
+- [ ] Compile log surfacing
+- [ ] Error diagnostics & debugging — explain what each error actually means and jump to the offending line
 - [ ] Live / on-save recompile
 
-## v0.4 — Templates
+## v0.4 — Templates & Components
 
-Start faster.
+Start faster and build faster.
 
 - [ ] Built-in template library
 - [ ] "New from template" flow
 - [ ] Custom, user-defined templates
+- [ ] Drag-and-drop component palette — insert tables, figures, lists, math environments, and other LaTeX building blocks without writing the boilerplate
 
 ## v0.5 — Universal Bibliography
 
@@ -68,6 +74,14 @@ Make it fast, make it yours.
 
 ## v1.0 — Stable
 
-- [ ] All core pillars (editor, compile, templates, bibliography) stable
+- [ ] All core pillars (editor, compile, templates, components, bibliography) stable
 - [ ] Documentation complete
 - [ ] Signed installers for macOS, Linux, and Windows
+
+## Beyond 1.0 — AI-Enabled Editing
+
+Once the stable release lands, Bib grows an AI-assisted LaTeX layer — kept local-first and opt-in.
+
+- [ ] AI-assisted authoring and rewriting
+- [ ] Context-aware LaTeX completion and error fixes
+- [ ] Assistance for citations, tables, and figures
